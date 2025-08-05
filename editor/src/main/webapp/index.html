@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Room & Join</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 350px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .btn {
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        #roomIdDisplay {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .divider {
+            margin: 25px 0;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Create a Room</h2>
+        <button class="btn" onclick="generateRoom()">Generate Room ID</button>
+        <div id="roomIdDisplay"></div>
+
+        <div class="divider"></div>
+
+        <h2>Join a Room</h2>
+        <input type="text" id="username" placeholder="Enter your name">
+        <input type="text" id="joinRoomId" placeholder="Enter Room ID">
+        <button class="btn" onclick="joinRoom()">Join Room</button>
+    </div>
+
+    <script>
+        let generatedRoomId = '';
+
+        function generateRoom() {
+            generatedRoomId = Date.now().toString().slice(-6);  // 6-digit room id
+            document.getElementById('roomIdDisplay').innerText = "Your Room ID: " + generatedRoomId;
+            document.getElementById('joinRoomId').value = generatedRoomId; // Auto-fill Join Room ID
+        }
+
+        function joinRoom() {
+            const username = document.getElementById('username').value;
+            const roomId = document.getElementById('joinRoomId').value;
+
+            if (username === '' || roomId === '') {
+                alert('Please enter both Username and Room ID.');
+                return;
+            }
+
+window.location.href = `editorpage.html?roomId=${roomId}&username=${username}`;
+        }
+    </script>
+</body>
+</html>

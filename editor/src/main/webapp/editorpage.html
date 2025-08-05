@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Collaborative Room - CodeMirror</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .sidebar p {
+            margin: 10px 0;
+        }
+        .members {
+            margin-top: 20px;
+        }
+        .members h3 {
+            font-size: 16px;
+            border-bottom: 1px solid #fff;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .editor-area {
+            flex: 1;
+            padding: 20px;
+            background-color: #ecf0f1;
+        }
+        #codeEditor {
+            height: 100%;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="sidebar">
+        <h2>Room Info</h2>
+        <p id="roomInfo"></p>
+        <div class="members">
+            <h3>Members</h3>
+            <div id="members"></div>
+        </div>
+    </div>
+    <div class="editor-area">
+        <div id="codeEditor"></div>
+    </div>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get('roomId');
+    const username = params.get('username');
+
+    document.getElementById('roomInfo').innerText = `Room ID: ${roomId}\nYou are: ${username}`;
+
+    const host = window.location.host;
+    const socket = new WebSocket(`ws://${host}/editor/codeeditor`);
+
+    let isRemoteUpdate = false;
+
+    // Initialize CodeMirror Editor
+    const editor = CodeMirror(document.getElementById('codeEditor'), {
+        lineNumbers: true,
+        mode: "javascript",
+        theme: "default",
+        value: ''
+    });
+
+    socket.onopen = () => {
+        socket.send(JSON.stringify({ type: 'join', roomId: roomId, username: username }));
+    };
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'updateMembers') {
+            const membersDiv = document.getElementById('members');
+            membersDiv.innerHTML = '';
+            data.members.forEach(member => {
+                const p = document.createElement('p');
+                p.innerText = member;
+                membersDiv.appendChild(p);
+            });
+        }
+
+        if (data.type === 'codeUpdate') {
+            if (editor.getValue() !== data.code) {
+                isRemoteUpdate = true;
+                editor.setValue(data.code);
+            }
+        }
+    };
+
+    editor.on('change', () => {
+        if (isRemoteUpdate) {
+            isRemoteUpdate = false;
+            return;
+        }
+
+        const message = {
+            type: 'codeUpdate',
+            roomId: roomId,
+            code: editor.getValue()
+        };
+
+        socket.send(JSON.stringify(message));
+    });
+</script>
+
+</body>
+</html>
