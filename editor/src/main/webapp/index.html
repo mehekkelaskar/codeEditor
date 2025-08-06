@@ -79,7 +79,7 @@
         function generateRoom() {
             generatedRoomId = Date.now().toString().slice(-6);  // 6-digit room id
             document.getElementById('roomIdDisplay').innerText = "Your Room ID: " + generatedRoomId;
-            document.getElementById('joinRoomId').value = generatedRoomId; // Auto-fill Join Room ID
+            document.getElementById('joinRoomId').value = generatedRoomId; 
         }
 
         function joinRoom() {
